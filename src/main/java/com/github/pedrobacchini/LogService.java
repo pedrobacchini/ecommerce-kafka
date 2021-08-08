@@ -8,7 +8,11 @@ public class LogService {
 
     public static void main(String[] args) {
         var logService = new LogService();
-        var kafkaService = new KafkaService(Pattern.compile("ECOMMERCE.*"), LogService.class.getSimpleName(), logService::parse);
+        var kafkaService = new KafkaService<String>(
+                Pattern.compile("ECOMMERCE.*"),
+                LogService.class.getSimpleName(),
+                logService::parse,
+                String.class);
         kafkaService.run();
     }
 
