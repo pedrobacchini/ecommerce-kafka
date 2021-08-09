@@ -1,16 +1,24 @@
 package com.github.pedrobacchini;
 
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.serialization.StringDeserializer;
+
+import java.util.Map;
 
 public class FraudDetectorService {
 
     public static void main(String[] args) {
         var fraudDetectorService = new FraudDetectorService();
+        var overrideProperties = Map.of(
+                ConsumerConfig.GROUP_ID_CONFIG, FraudDetectorService.class.getSimpleName(),
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonDeserializer.class.getName(),
+                GsonDeserializer.TYPE_CONFIG, Order.class.getName()
+        );
         try (var service = new KafkaService<>(
                 "ECOMMERCE_NEW_ORDER",
-                FraudDetectorService.class.getSimpleName(),
                 fraudDetectorService::parse,
-                Order.class)) {
+                overrideProperties)) {
             service.run();
         }
     }
