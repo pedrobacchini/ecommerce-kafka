@@ -10,17 +10,17 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.Consumer;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
 public class KafkaService<T> implements Closeable {
 
-    private final Consumer<ConsumerRecord<String, T>> parse;
+    private final ConsumerKafka<ConsumerRecord<String, T>> parse;
     private final KafkaConsumer<String, T> consumer;
 
     KafkaService(
             String topic,
-            Consumer<ConsumerRecord<String, T>> parse,
+            ConsumerKafka<ConsumerRecord<String, T>> parse,
             Map<String, String> overrideProperties
     ) {
         this.parse = parse;
@@ -30,7 +30,7 @@ public class KafkaService<T> implements Closeable {
 
     public KafkaService(
             Pattern pattern,
-            Consumer<ConsumerRecord<String, T>> parse,
+            ConsumerKafka<ConsumerRecord<String, T>> parse,
             Map<String, String> overrideProperties
     ) {
         this.parse = parse;
@@ -44,7 +44,15 @@ public class KafkaService<T> implements Closeable {
             if (!records.isEmpty()) {
                 System.out.println("Encontrei registros " + records.count());
                 for (var record : records) {
-                    parse.accept(record);
+                    try {
+                        parse.accept(record);
+                    } catch (ExecutionException e) {
+                        // so far, just logging the exception for this message
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        // so far, just logging the exception for this message
+                        e.printStackTrace();
+                    }
                 }
             }
         }
