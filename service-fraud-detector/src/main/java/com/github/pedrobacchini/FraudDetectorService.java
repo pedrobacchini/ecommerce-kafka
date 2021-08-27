@@ -13,8 +13,7 @@ public class FraudDetectorService {
         var fraudDetectorService = new FraudDetectorService();
         var overrideProperties = Map.of(
                 ConsumerConfig.GROUP_ID_CONFIG, FraudDetectorService.class.getSimpleName(),
-                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonDeserializer.class.getName(),
-                GsonDeserializer.TYPE_CONFIG, Order.class.getName()
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonDeserializer.class.getName()
         );
         try (var service = new KafkaService<>(
                 "ECOMMERCE_NEW_ORDER",
@@ -26,7 +25,7 @@ public class FraudDetectorService {
 
     private final KafkaDispatcher<Order> orderKafkaDispatcher = new KafkaDispatcher<>();
 
-    private void parse(ConsumerRecord<String, Order> record) throws ExecutionException, InterruptedException {
+    private void parse(ConsumerRecord<String, Message<Order>> record) throws ExecutionException, InterruptedException {
         System.out.println("__________________________________");
         System.out.println("Processing new order, checking for fraud");
         System.out.println(record.key());
@@ -38,7 +37,7 @@ public class FraudDetectorService {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        Order order = record.value();
+        Order order = record.value().getPayload();
         if (isFraud(order)) {
             System.out.println("Order is a fraud!!!!!");
             orderKafkaDispatcher.send("ECOMMERCE_ORDER_REJECTED", order.getEmail(), order);

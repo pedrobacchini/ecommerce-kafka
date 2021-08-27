@@ -12,8 +12,7 @@ public class EmailService {
         var emailService = new EmailService();
         var overrideProperties = Map.of(
                 ConsumerConfig.GROUP_ID_CONFIG, EmailService.class.getSimpleName(),
-                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName(),
-                GsonDeserializer.TYPE_CONFIG, String.class.getName()
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName()
         );
         try (var service = new KafkaService<>(
                 "ECOMMERCE_SEND_EMAIL",
@@ -23,7 +22,7 @@ public class EmailService {
         }
     }
 
-    private void parse(ConsumerRecord<String, String> record) {
+    private void parse(ConsumerRecord<String, Message<String>> record) {
         System.out.println("__________________________________");
         System.out.println("Send email");
         System.out.println(record.key());

@@ -16,8 +16,7 @@ public class ReadingReportService {
         var reportService = new ReadingReportService();
         var overrideProperties = Map.of(
                 ConsumerConfig.GROUP_ID_CONFIG, ReadingReportService.class.getSimpleName(),
-                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonDeserializer.class.getName(),
-                GsonDeserializer.TYPE_CONFIG, User.class.getName()
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonDeserializer.class.getName()
         );
         try (var service = new KafkaService<>(
                 "USER_GENERAING_READING_REPORT",
@@ -27,9 +26,9 @@ public class ReadingReportService {
         }
     }
 
-    private void parse(ConsumerRecord<String, User> record) throws IOException {
+    private void parse(ConsumerRecord<String, Message<User>> record) throws IOException {
         System.out.println("__________________________________");
-        User user = record.value();
+        User user = record.value().getPayload();
         System.out.println("Processing report for " + user);
         File target = new File(user.getReportPath());
         IO.copyTo(SOURCE, target);

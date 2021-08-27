@@ -30,8 +30,7 @@ public class CreateUserService {
         var createUserService = new CreateUserService();
         var overrideProperties = Map.of(
                 ConsumerConfig.GROUP_ID_CONFIG, CreateUserService.class.getSimpleName(),
-                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonDeserializer.class.getName(),
-                GsonDeserializer.TYPE_CONFIG, Order.class.getName()
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonDeserializer.class.getName()
         );
         try (var service = new KafkaService<>(
                 "ECOMMERCE_NEW_ORDER",
@@ -41,11 +40,11 @@ public class CreateUserService {
         }
     }
 
-    private void parse(ConsumerRecord<String, Order> record) throws SQLException {
+    private void parse(ConsumerRecord<String, Message<Order>> record) throws SQLException {
         System.out.println("__________________________________");
         System.out.println("Processing new order, checking for new user");
         System.out.println(record.value());
-        var order = record.value();
+        var order = record.value().getPayload();
         if(isNewUser(order.getEmail())) {
             insertNewUser(order.getEmail());
         }

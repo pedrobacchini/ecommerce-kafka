@@ -32,8 +32,7 @@ public class BatchSendMessageService {
         var batchSendMessageService = new BatchSendMessageService();
         var overrideProperties = Map.of(
                 ConsumerConfig.GROUP_ID_CONFIG, BatchSendMessageService.class.getSimpleName(),
-                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonDeserializer.class.getName(),
-                GsonDeserializer.TYPE_CONFIG, String.class.getName()
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonDeserializer.class.getName()
         );
         try (var service = new KafkaService<>(
                 "SEND_MESSAGE_TO_ALL_USERS",
@@ -45,13 +44,13 @@ public class BatchSendMessageService {
 
     private final KafkaDispatcher<User> userKafkaDispatcher = new KafkaDispatcher<>();
 
-    private void parse(ConsumerRecord<String, String> record) throws ExecutionException, InterruptedException, SQLException {
+    private void parse(ConsumerRecord<String, Message<String>> record) throws ExecutionException, InterruptedException, SQLException {
         System.out.println("__________________________________");
         System.out.println("Processing new batch");
         System.out.println("Topic: " + record.value());
 
         for (User user : getAllUsers()) {
-            userKafkaDispatcher.send(record.value(), user.getUuid(), user);
+            userKafkaDispatcher.send(record.value().getPayload(), user.getUuid(), user);
         }
     }
 

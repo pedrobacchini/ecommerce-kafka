@@ -10,17 +10,16 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
 public class KafkaService<T> implements Closeable {
 
-    private final ConsumerKafka<ConsumerRecord<String, T>> parse;
-    private final KafkaConsumer<String, T> consumer;
+    private final ConsumerKafka<ConsumerRecord<String, Message<T>>> parse;
+    private final KafkaConsumer<String, Message<T>> consumer;
 
     KafkaService(
             String topic,
-            ConsumerKafka<ConsumerRecord<String, T>> parse,
+            ConsumerKafka<ConsumerRecord<String, Message<T>>> parse,
             Map<String, String> overrideProperties
     ) {
         this.parse = parse;
@@ -30,7 +29,7 @@ public class KafkaService<T> implements Closeable {
 
     public KafkaService(
             Pattern pattern,
-            ConsumerKafka<ConsumerRecord<String, T>> parse,
+            ConsumerKafka<ConsumerRecord<String, Message<T>>> parse,
             Map<String, String> overrideProperties
     ) {
         this.parse = parse;
