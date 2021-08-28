@@ -35,7 +35,7 @@ public class BatchSendMessageService {
                 ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonDeserializer.class.getName()
         );
         try (var service = new KafkaService<>(
-                "SEND_MESSAGE_TO_ALL_USERS",
+                "ECOMMERCE_SEND_MESSAGE_TO_ALL_USERS",
                 batchSendMessageService::parse,
                 overrideProperties)) {
             service.run();
@@ -47,10 +47,16 @@ public class BatchSendMessageService {
     private void parse(ConsumerRecord<String, Message<String>> record) throws ExecutionException, InterruptedException, SQLException {
         System.out.println("__________________________________");
         System.out.println("Processing new batch");
-        System.out.println("Topic: " + record.value());
+        var message = record.value();
+        System.out.println("Topic: " + message.getPayload());
 
         for (User user : getAllUsers()) {
-            userKafkaDispatcher.send(record.value().getPayload(), user.getUuid(), user);
+            userKafkaDispatcher.send(
+                    record.value().getPayload(),
+                    user.getUuid(),
+                    message.getId().continueWith(BatchSendMessageService.class.getSimpleName()),
+                    user
+            );
         }
     }
 

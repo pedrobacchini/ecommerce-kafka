@@ -19,7 +19,7 @@ public class ReadingReportService {
                 ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonDeserializer.class.getName()
         );
         try (var service = new KafkaService<>(
-                "USER_GENERAING_READING_REPORT",
+                "ECOMMERCE_USER_GENERAING_READING_REPORT",
                 reportService::parse,
                 overrideProperties)) {
             service.run();
