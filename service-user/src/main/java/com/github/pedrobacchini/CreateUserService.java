@@ -1,5 +1,7 @@
 package com.github.pedrobacchini;
 
+import com.github.pedrobacchini.consumer.GsonDeserializer;
+import com.github.pedrobacchini.consumer.KafkaService;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 

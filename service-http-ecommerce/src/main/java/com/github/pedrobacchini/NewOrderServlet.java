@@ -1,5 +1,7 @@
 package com.github.pedrobacchini;
 
+import com.github.pedrobacchini.dispatcher.KafkaDispatcher;
+
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -33,10 +35,11 @@ public class NewOrderServlet extends HttpServlet implements Servlet {
 
             var orderId = UUID.randomUUID().toString();
             Order order = new Order(orderId, amount, email);
+            CorrelationId id = new CorrelationId(NewOrderServlet.class.getSimpleName());
             orderDispatcher.send(
                     "ECOMMERCE_NEW_ORDER",
                     email,
-                    new CorrelationId(NewOrderServlet.class.getSimpleName()),
+                    id,
                     order
             );
 
@@ -44,7 +47,7 @@ public class NewOrderServlet extends HttpServlet implements Servlet {
             emailDispatcher.send(
                     "ECOMMERCE_SEND_EMAIL",
                     email,
-                    new CorrelationId(NewOrderServlet.class.getSimpleName()),
+                    id,
                     emailCode
             );
 

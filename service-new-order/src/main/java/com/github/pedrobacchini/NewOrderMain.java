@@ -1,5 +1,7 @@
 package com.github.pedrobacchini;
 
+import com.github.pedrobacchini.dispatcher.KafkaDispatcher;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -9,6 +11,7 @@ public class NewOrderMain {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
 
         var email = Math.random()+"@email.com";
+        var id = new CorrelationId(NewOrderMain.class.getSimpleName());
 
         for (int i = 0; i < 10; i++) {
             try (var kafkaDispatcher = new KafkaDispatcher<Order>()) {
@@ -18,7 +21,7 @@ public class NewOrderMain {
                 kafkaDispatcher.send(
                         "ECOMMERCE_NEW_ORDER",
                         email,
-                        new CorrelationId(NewOrderMain.class.getSimpleName()),
+                        id,
                         order
                 );
             }
@@ -28,7 +31,7 @@ public class NewOrderMain {
                 kafkaDispatcher.send(
                         "ECOMMERCE_SEND_EMAIL",
                         email,
-                        new CorrelationId(NewOrderMain.class.getSimpleName()),
+                        id,
                         emailCode
                 );
             }

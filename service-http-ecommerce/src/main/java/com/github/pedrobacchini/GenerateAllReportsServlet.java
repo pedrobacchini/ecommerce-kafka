@@ -1,5 +1,7 @@
 package com.github.pedrobacchini;
 
+import com.github.pedrobacchini.dispatcher.KafkaDispatcher;
+
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

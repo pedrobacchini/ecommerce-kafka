@@ -1,5 +1,7 @@
-package com.github.pedrobacchini;
+package com.github.pedrobacchini.dispatcher;
 
+import com.github.pedrobacchini.CorrelationId;
+import com.github.pedrobacchini.Message;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.StringSerializer;
 
@@ -12,7 +14,7 @@ public class KafkaDispatcher<T> implements Closeable {
 
     private final KafkaProducer<String, Message<T>> producer;
 
-    KafkaDispatcher() {
+    public KafkaDispatcher() {
         this.producer = new KafkaProducer<>(properties());
     }
 
@@ -25,12 +27,12 @@ public class KafkaDispatcher<T> implements Closeable {
         return properties;
     }
 
-    void send(String topic, String key, CorrelationId id, T payload) throws ExecutionException, InterruptedException {
+    public void send(String topic, String key, CorrelationId id, T payload) throws ExecutionException, InterruptedException {
         sendAsync(topic, key, id, payload).get();
     }
 
-    Future<RecordMetadata> sendAsync(String topic, String key, CorrelationId id, T payload) {
-        var value = new Message<>(id, payload);
+    public Future<RecordMetadata> sendAsync(String topic, String key, CorrelationId id, T payload) {
+        var value = new Message<>(id.continueWith("_" + topic), payload);
         var record = new ProducerRecord<>(topic, key, value);
         Callback callback = (data, ex) -> {
             if (ex != null) {

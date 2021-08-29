@@ -1,5 +1,8 @@
-package com.github.pedrobacchini;
+package com.github.pedrobacchini.consumer;
 
+import com.github.pedrobacchini.Message;
+import com.github.pedrobacchini.dispatcher.GsonSerializer;
+import com.github.pedrobacchini.dispatcher.KafkaDispatcher;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -18,7 +21,7 @@ public class KafkaService<T> implements Closeable {
     private final ConsumerKafka<ConsumerRecord<String, Message<T>>> parse;
     private final KafkaConsumer<String, Message<T>> consumer;
 
-    KafkaService(
+    public KafkaService(
             String topic,
             ConsumerKafka<ConsumerRecord<String, Message<T>>> parse,
             Map<String, String> overrideProperties
@@ -38,7 +41,7 @@ public class KafkaService<T> implements Closeable {
         this.consumer.subscribe(pattern);
     }
 
-    void run() throws ExecutionException, InterruptedException {
+    public void run() throws ExecutionException, InterruptedException {
         try(var deadLetter = new KafkaDispatcher<>()) {
             while (true) {
                 var records = consumer.poll(Duration.ofMillis(100));
