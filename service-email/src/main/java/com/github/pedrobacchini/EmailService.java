@@ -2,12 +2,10 @@ package com.github.pedrobacchini;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
-import java.util.concurrent.ExecutionException;
-
 public class EmailService implements ConsumerService<String> {
 
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
-        new ServiceProvider().run(EmailService::new);
+    public static void main(String[] args) {
+        new ServiceRunner<>(EmailService::new).start(5);
     }
 
     @Override
