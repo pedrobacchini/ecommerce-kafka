@@ -10,6 +10,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
 public class KafkaService<T> implements Closeable {
@@ -37,19 +38,21 @@ public class KafkaService<T> implements Closeable {
         this.consumer.subscribe(pattern);
     }
 
-    void run() {
-        while (true) {
-            var records = consumer.poll(Duration.ofMillis(100));
-            if (!records.isEmpty()) {
-                System.out.println("Encontrei registros " + records.count());
-                for (var record : records) {
-                    try {
-                        parse.accept(record);
-                    } catch (Exception e) {
-                        // only catcher Exception because no matter with Exception
-                        // i want to recover and parse to the next one
-                        // so far, just logging the exception for this message
-                        e.printStackTrace();
+    void run() throws ExecutionException, InterruptedException {
+        try(var deadLetter = new KafkaDispatcher<>()) {
+            while (true) {
+                var records = consumer.poll(Duration.ofMillis(100));
+                if (!records.isEmpty()) {
+                    System.out.println("Encontrei registros " + records.count());
+                    for (var record : records) {
+                        try {
+                            parse.accept(record);
+                        } catch (Exception e) {
+                            var message = record.value();
+                            deadLetter.send("ECOMMERCE_DEADLETTER", String.valueOf(message.getId()),
+                                    message.getId().continueWith("DeadLetter"),
+                                    new GsonSerializer<>().serialize("", message.getPayload()));
+                        }
                     }
                 }
             }

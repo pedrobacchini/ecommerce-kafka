@@ -28,7 +28,7 @@ public class BatchSendMessageService {
         }
     }
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) throws SQLException, ExecutionException, InterruptedException {
         var batchSendMessageService = new BatchSendMessageService();
         var overrideProperties = Map.of(
                 ConsumerConfig.GROUP_ID_CONFIG, BatchSendMessageService.class.getSimpleName(),
@@ -44,14 +44,14 @@ public class BatchSendMessageService {
 
     private final KafkaDispatcher<User> userKafkaDispatcher = new KafkaDispatcher<>();
 
-    private void parse(ConsumerRecord<String, Message<String>> record) throws ExecutionException, InterruptedException, SQLException {
+    private void parse(ConsumerRecord<String, Message<String>> record) throws SQLException {
         System.out.println("__________________________________");
         System.out.println("Processing new batch");
         var message = record.value();
         System.out.println("Topic: " + message.getPayload());
 
         for (User user : getAllUsers()) {
-            userKafkaDispatcher.send(
+            userKafkaDispatcher.sendAsync(
                     record.value().getPayload(),
                     user.getUuid(),
                     message.getId().continueWith(BatchSendMessageService.class.getSimpleName()),

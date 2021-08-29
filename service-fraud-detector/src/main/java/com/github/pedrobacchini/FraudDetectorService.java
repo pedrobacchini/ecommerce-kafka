@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutionException;
 
 public class FraudDetectorService {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
         var fraudDetectorService = new FraudDetectorService();
         var overrideProperties = Map.of(
                 ConsumerConfig.GROUP_ID_CONFIG, FraudDetectorService.class.getSimpleName(),
