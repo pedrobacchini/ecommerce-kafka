@@ -1,4 +1,4 @@
-package com.github.pedrobacchini;
+package com.github.pedrobacchini.consumer;
 
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;

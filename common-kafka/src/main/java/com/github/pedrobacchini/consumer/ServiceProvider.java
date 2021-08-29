@@ -1,8 +1,6 @@
-package com.github.pedrobacchini;
+package com.github.pedrobacchini.consumer;
 
-import com.github.pedrobacchini.consumer.KafkaService;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -22,7 +20,7 @@ public class ServiceProvider<T> implements Callable<Void> {
         var service = factory.get();
         var overrideProperties = Map.of(
                 ConsumerConfig.GROUP_ID_CONFIG, service.getConsumerGroup(),
-                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName()
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, service.getDeserializerClass()
         );
         try (var kafkaService = new KafkaService<>(
                 service.getTopic(),

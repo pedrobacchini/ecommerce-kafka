@@ -1,11 +1,19 @@
 package com.github.pedrobacchini;
 
+import com.github.pedrobacchini.consumer.ConsumerService;
+import com.github.pedrobacchini.consumer.ServiceRunner;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.serialization.StringDeserializer;
 
 public class EmailService implements ConsumerService<String> {
 
     public static void main(String[] args) {
         new ServiceRunner<>(EmailService::new).start(5);
+    }
+
+    @Override
+    public String getDeserializerClass() {
+        return StringDeserializer.class.getName();
     }
 
     @Override
