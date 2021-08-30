@@ -1,13 +1,12 @@
 package com.github.pedrobacchini.consumer;
 
 import java.util.concurrent.Executors;
-import java.util.function.Supplier;
 
 public class ServiceRunner<T> {
 
     private final ServiceProvider<T> serviceProvider;
 
-    public ServiceRunner(Supplier<ConsumerService<T>> factory) {
+    public ServiceRunner(ServiceFactory<T> factory) {
         this.serviceProvider = new ServiceProvider<>(factory);
     }
 

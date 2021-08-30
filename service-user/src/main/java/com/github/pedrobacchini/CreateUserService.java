@@ -1,22 +1,20 @@
 package com.github.pedrobacchini;
 
+import com.github.pedrobacchini.consumer.ConsumerService;
 import com.github.pedrobacchini.consumer.GsonDeserializer;
-import com.github.pedrobacchini.consumer.KafkaService;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
+import com.github.pedrobacchini.consumer.ServiceRunner;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
-public class CreateUserService {
+public class CreateUserService implements ConsumerService<Order> {
 
     private final Connection connection;
 
-    CreateUserService() throws SQLException {
+    private CreateUserService() throws SQLException {
         var url = "jdbc:sqlite:users_database.db";
         this.connection = DriverManager.getConnection(url);
         try {
@@ -29,21 +27,26 @@ public class CreateUserService {
         }
     }
 
-    public static void main(String[] args) throws SQLException, ExecutionException, InterruptedException {
-        var createUserService = new CreateUserService();
-        var overrideProperties = Map.of(
-                ConsumerConfig.GROUP_ID_CONFIG, CreateUserService.class.getSimpleName(),
-                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonDeserializer.class.getName()
-        );
-        try (var service = new KafkaService<>(
-                "ECOMMERCE_NEW_ORDER",
-                createUserService::parse,
-                overrideProperties)) {
-            service.run();
-        }
+    public static void main(String[] args) {
+        new ServiceRunner<>(CreateUserService::new).start(1);
     }
 
-    private void parse(ConsumerRecord<String, Message<Order>> record) throws SQLException {
+    @Override
+    public String getDeserializerClass() {
+        return GsonDeserializer.class.getName();
+    }
+
+    @Override
+    public String getConsumerGroup() {
+        return CreateUserService.class.getSimpleName();
+    }
+
+    @Override
+    public String getTopic() {
+        return "ECOMMERCE_NEW_ORDER";
+    }
+
+    public void parse(ConsumerRecord<String, Message<Order>> record) throws SQLException {
         System.out.println("__________________________________");
         System.out.println("Processing new order, checking for new user");
         System.out.println(record.value());
