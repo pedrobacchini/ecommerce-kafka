@@ -5,26 +5,17 @@ import com.github.pedrobacchini.consumer.GsonDeserializer;
 import com.github.pedrobacchini.consumer.ServiceRunner;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
 public class CreateUserService implements ConsumerService<Order> {
 
-    private final Connection connection;
+    private final LocalDatabase localDatabase;
 
-    private CreateUserService() throws SQLException {
-        var url = "jdbc:sqlite:users_database.db";
-        this.connection = DriverManager.getConnection(url);
-        try {
-            connection.createStatement().execute(
-                    "create table Users(uuid varchar(200) primary key, email varchar(200))"
-            );
-        } catch (SQLException ex) {
-            //be careful, the sql could be wrong, be realllllly careful
-            ex.printStackTrace();
-        }
+    public CreateUserService() throws SQLException {
+        this.localDatabase = new LocalDatabase("users_database");
+        this.localDatabase.createIfNotExists("create table Users(uuid varchar(200) primary key, email varchar(200))");
     }
 
     public static void main(String[] args) {
@@ -51,23 +42,19 @@ public class CreateUserService implements ConsumerService<Order> {
         System.out.println("Processing new order, checking for new user");
         System.out.println(record.value());
         var order = record.value().getPayload();
-        if(isNewUser(order.getEmail())) {
+        if (isNewUser(order.getEmail())) {
             insertNewUser(order.getEmail());
         }
     }
 
     private void insertNewUser(String email) throws SQLException {
-        var insert = connection.prepareStatement("insert into Users (uuid, email) values (?,?)");
-        insert.setString(1, UUID.randomUUID().toString());
-        insert.setString(2, email);
-        insert.execute();
-        System.out.println("Creating user with email "+email);
+        String uuid = UUID.randomUUID().toString();
+        localDatabase.update("insert into Users (uuid, email) values (?,?)", uuid, email);
+        System.out.println("Creating user with email " + email);
     }
 
     private boolean isNewUser(String email) throws SQLException {
-        var exists = connection.prepareStatement("select uuid from Users where email = ? limit 1");
-        exists.setString(1, email);
-        var results = exists.executeQuery();
+        ResultSet results = localDatabase.query("select uuid from Users where email = ? limit 1", email);
         return !results.next();
     }
 }
