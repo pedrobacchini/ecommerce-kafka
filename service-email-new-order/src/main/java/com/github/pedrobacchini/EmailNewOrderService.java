@@ -1,33 +1,37 @@
 package com.github.pedrobacchini;
 
+import com.github.pedrobacchini.consumer.ConsumerService;
 import com.github.pedrobacchini.consumer.GsonDeserializer;
-import com.github.pedrobacchini.consumer.KafkaService;
+import com.github.pedrobacchini.consumer.ServiceRunner;
 import com.github.pedrobacchini.dispatcher.KafkaDispatcher;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class EmailNewOrderService {
+public class EmailNewOrderService implements ConsumerService<Order> {
 
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
-        var emailService = new EmailNewOrderService();
-        var overrideProperties = Map.of(
-                ConsumerConfig.GROUP_ID_CONFIG, EmailNewOrderService.class.getSimpleName(),
-                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonDeserializer.class.getName()
-        );
-        try (var service = new KafkaService<>(
-                "ECOMMERCE_NEW_ORDER",
-                emailService::parse,
-                overrideProperties)) {
-            service.run();
-        }
+    public static void main(String[] args) {
+        new ServiceRunner<>(EmailNewOrderService::new).start(1);
     }
 
     private final KafkaDispatcher<String> emailDispatcher = new KafkaDispatcher<>();
 
-    private void parse(ConsumerRecord<String, Message<Order>> record) throws ExecutionException, InterruptedException {
+    @Override
+    public String getDeserializerClass() {
+        return GsonDeserializer.class.getName();
+    }
+
+    @Override
+    public String getConsumerGroup() {
+        return EmailNewOrderService.class.getSimpleName();
+    }
+
+    @Override
+    public String getTopic() {
+        return "ECOMMERCE_NEW_ORDER";
+    }
+
+    public void parse(ConsumerRecord<String, Message<Order>> record) throws ExecutionException, InterruptedException {
         System.out.println("__________________________________");
         System.out.println("Processing new order, preparing email");
         System.out.println(record.value());

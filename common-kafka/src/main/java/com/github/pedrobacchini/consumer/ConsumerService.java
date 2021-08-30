@@ -3,8 +3,6 @@ package com.github.pedrobacchini.consumer;
 import com.github.pedrobacchini.Message;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
-import java.io.IOException;
-
 public interface ConsumerService<T> {
 
     String getDeserializerClass();
@@ -13,5 +11,7 @@ public interface ConsumerService<T> {
 
     String getTopic();
 
-    void parse(ConsumerRecord<String, Message<T>> record) throws IOException;
+    // you may argue that a ConsumerException would be better
+    // and its ok, it can be better
+    void parse(ConsumerRecord<String, Message<T>> record) throws Exception;
 }
